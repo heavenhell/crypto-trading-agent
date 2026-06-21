@@ -80,13 +80,17 @@ def get_positions(symbol: str = "") -> list:
     for p in positions:
         contracts = p.get("contracts") or 0
         if contracts and contracts != 0:   # 只返回有实际仓位的
+            # Binance 不直接返回 leverage 字段，用 initialMarginPercentage 反算
+            imp = p.get("initialMarginPercentage")
+            leverage = round(1.0 / imp) if imp and imp > 0 else None
             result.append({
                 "symbol": p["symbol"],
                 "side": p["side"],            # long / short
                 "contracts": contracts,
                 "entry_price": p.get("entryPrice"),
                 "unrealized_pnl": p.get("unrealizedPnl"),
-                "leverage": p.get("leverage"),
+                "leverage": leverage,
+                "margin_mode": p.get("marginMode"),
             })
     return result
 
